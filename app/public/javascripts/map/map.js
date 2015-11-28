@@ -51,14 +51,13 @@ angular
           fillColor: this.getCircleColor(s, this.currentHour)
         })
 
-        this.currentHour++;
-
-        if (this.currentHour >= 24) {
-          this.currentHour = 0;
-        }
-
-        console.log(circle.data.station.id);
       }, self);
+
+      self.currentHour++;
+
+      if (self.currentHour >= 24) {
+        self.currentHour = 0;
+      }
     };
 
     this.drawStationsCircles = function(stations, map) {
@@ -73,7 +72,7 @@ angular
           strokeOpacity: 0.8,
           strokeWeight: 1,
           fillColor: '#FF0000',
-          fillOpacity: 0.25,
+          fillOpacity: 0.75,
           map: map,
           center: center,
           data: {
@@ -136,9 +135,11 @@ angular
 
       var netFlow = object.netFlow;
 
-      if (netFlow <= -3) {
+      console.log('At ' + hour + ', station id: ' + station.id + ' has a flow of: ' + netFlow);
+
+      if (netFlow <= -0.25) {
         return '#2D4671'; /* blue */
-      } else if (netFlow > -3 && netFlow < 6) {
+      } else if (netFlow > -0.25 && netFlow < 0.5) {
         return '#532B72'; /* purple */
       } else {
         return '#AA3C39'; /* red */
