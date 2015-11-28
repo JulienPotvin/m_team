@@ -1,5 +1,15 @@
 angular
   .module('mteam.app')
+  .directive('stationInfo', function() {
+      return {
+        restrict: 'E',
+        templateUrl: '/javascripts/stations/stationInfo.html',
+        replace: true,
+        scope: {
+          name: '@',
+        },
+      };
+  })
   .service('stationsService', function(_, $http, $q) {
     this.bounds = {
       min: null,

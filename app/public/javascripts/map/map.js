@@ -16,7 +16,7 @@ angular
       }
     };
   })
-  .controller('MapCtrl', function(_, $rootScope, $scope, $uibModal, google, stationsService) {
+  .controller('MapCtrl', function(_, google, stationsService, mapService) {
     var vm = this;
 
     vm.init = function() {
@@ -30,20 +30,75 @@ angular
       vm.stationsService = stationsService;
 
       stationsService.getBixiStations().then(function(stations) {
-        _.each(stations, function(s) {
-          var marker = new google.maps.Marker({
-            position: {
-              lat: s.lat,
-              lng: s.long,
-            },
-            map: vm.map,
-            title: s.name
-          });
-        }, this);
+        mapService.drawStationsCircles(stations, vm.map);
       });
     };
   })
-  .service('mapService', function() {
-    this.stations = {};
-    this.markers = {};
+  .service('mapService', function($, $rootScope, $compile, stationsService) {
+    this.circles = {};
+
+    this.drawStationsCircles = function(stations, map) {
+      _.each(stations, function(s, i) {
+        var center = {
+          lat: s.lat,
+          lng: s.long
+        };
+
+        var circle = new google.maps.Circle({
+          strokeColor: '#FFFFFF',
+          strokeOpacity: 0.8,
+          strokeWeight: 1,
+          fillColor: '#FF0000',
+          fillOpacity: 0.25,
+          map: map,
+          center: center,
+          data: {
+            station: s
+          },
+          radius: this.getCircleRadius(s)
+        });
+
+        circle.addListener('mouseover', function() {
+          console.log('entering: ' + this.data.station.name);
+
+          var scope = $rootScope.$new();
+          var el = angular.element(`<station-info name="${s.name}"></station-info>`);
+          var content = $compile(el)(scope);
+          scope.$apply();
+
+          var infowindow = new google.maps.InfoWindow({
+            content: el.html(),
+            position: center
+          });
+
+          this.data.infowindow = infowindow;
+
+          infowindow.open(map, this);
+        });
+
+        circle.addListener('mouseout', function() {
+          console.log('leaving: ' + this.data.station.name);
+
+          if (this.data.infowindow) {
+            this.data.infowindow.close()
+            delete this.data.infowindow;
+            return;
+          }
+        });
+
+        this.circles[s.id] = circle;
+      }, this);
+    };
+
+    this.getCircleRadius = function(station) {
+      var max = stationsService.bounds.max.nbEmptyDocks;
+
+      var radius = Math.floor(station.nbEmptyDocks / max * 100);
+
+      if (radius < 10) {
+        radius = 10;
+      }
+
+      return radius;
+    };
   });
