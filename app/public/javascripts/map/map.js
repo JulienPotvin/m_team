@@ -38,8 +38,28 @@ angular
       });
     };
   })
-  .service('mapService', function($, $rootScope, $compile, stationsService) {
+  .service('mapService', function($, $interval, $rootScope, $compile, stationsService) {
+    this.currentHour = 0;
     this.circles = {};
+    var self = this;
+
+    this.increaseHour = function() {
+      _.each(stationsService.stations, function(s) {
+        var circle = this.circles[s.id];
+
+        circle.setOptions({
+          fillColor: this.getCircleColor(s, this.currentHour)
+        })
+
+        this.currentHour++;
+
+        if (this.currentHour >= 24) {
+          this.currentHour = 0;
+        }
+
+        console.log(circle.data.station.id);
+      }, self);
+    };
 
     this.drawStationsCircles = function(stations, map) {
       _.each(stations, function(s, i) {
@@ -97,7 +117,7 @@ angular
     this.getCircleRadius = function(station) {
       var max = stationsService.bounds.max.nbEmptyDocks;
 
-      var radius = Math.floor(station.nbEmptyDocks / max * 100);
+      var radius = Math.floor(station.nbEmptyDocks / max * 200);
 
       if (radius < 10) {
         radius = 10;
@@ -105,4 +125,25 @@ angular
 
       return radius;
     };
+
+    this.getCircleColor = function(station, hour) {
+      var object = _.first(_.where(stationsService.flow[station.id], { hour: hour }));
+
+      if (!object) {
+        console.log('At ' + hour + ', there is no info for station id: ' + station.id);
+        return;
+      }
+
+      var netFlow = object.netFlow;
+
+      if (netFlow <= -3) {
+        return '#2D4671'; /* blue */
+      } else if (netFlow > -3 && netFlow < 6) {
+        return '#532B72'; /* purple */
+      } else {
+        return '#AA3C39'; /* red */
+      }
+    };
+
+    $interval(this.increaseHour, 1000, this);
   });

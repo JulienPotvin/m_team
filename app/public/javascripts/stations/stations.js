@@ -48,12 +48,11 @@ angular
 
       if (!self.flow || force) {
         return $http.get('http://localhost:3000/rest/flow/').then(function(response) {
-          self.flow = response.data;
+          var flow = response.data;
 
+          self.flow = _.groupBy(flow, 'stationId');
           console.log(self.flow);
 
-          _.each(self.flow, function(s) {
-          }, self);
           return self.flow;
         });
       } else {
