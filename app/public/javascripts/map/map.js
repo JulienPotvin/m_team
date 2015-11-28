@@ -23,8 +23,8 @@ angular
       var montreal = new google.maps.LatLng(45.4875794, -73.6222646);
 
       vm.map = new google.maps.Map(document.getElementById('map'), {
-        center: lagare,
-        zoom: 11.89
+        center: montreal,
+        zoom: 11
       });
 
       vm.mapService = mapService;

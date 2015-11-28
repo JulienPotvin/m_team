@@ -4,9 +4,7 @@ angular
     'ui.bootstrap.datetimepicker'
   ])
   .run(function($interval, mapService) {
-    $interval(function() {
-      mapService.getParkingList(true);
-    }, 2000);
+    mapService.getBixiStations();
   })
   .value('google', window.google)
   .value('moment', window.moment);
