@@ -42,4 +42,26 @@ angular
         return deferred.promise;
       }
     };
+
+    this.getBixiFlow = function(force) {
+      var self = this;
+
+      if (!self.flow || force) {
+        return $http.get('http://localhost:3000/rest/flow/').then(function(response) {
+          self.flow = response.data;
+
+          console.log(self.flow);
+
+          _.each(self.flow, function(s) {
+          }, self);
+          return self.flow;
+        });
+      } else {
+        var deferred = $q.defer();
+
+        deferred.resolve(self.flow);
+
+        return deferred.promise;
+      }
+    };
   });

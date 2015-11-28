@@ -24,13 +24,17 @@ angular
 
       vm.map = new google.maps.Map(document.getElementById('map'), {
         center: montreal,
-        zoom: 11
+        zoom: 12,
+        mapTypeId: google.maps.MapTypeId.TERRAIN
       });
 
       vm.stationsService = stationsService;
 
       stationsService.getBixiStations().then(function(stations) {
         mapService.drawStationsCircles(stations, vm.map);
+      });
+
+      stationsService.getBixiFlow().then(function(flow) {
       });
     };
   })
