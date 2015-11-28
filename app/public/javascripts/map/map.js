@@ -16,7 +16,7 @@ angular
       }
     };
   })
-  .controller('MapCtrl', function($rootScope, $scope, $uibModal, google, mapService) {
+  .controller('MapCtrl', function(_, $rootScope, $scope, $uibModal, google, stationsService) {
     var vm = this;
 
     vm.init = function() {
@@ -27,31 +27,23 @@ angular
         zoom: 11
       });
 
-      vm.mapService = mapService;
+      vm.stationsService = stationsService;
 
-      mapService.getBixiStations().then(function(stations) {
-        console.log(stations);
+      stationsService.getBixiStations().then(function(stations) {
+        _.each(stations, function(s) {
+          var marker = new google.maps.Marker({
+            position: {
+              lat: s.lat,
+              lng: s.long,
+            },
+            map: vm.map,
+            title: s.name
+          });
+        }, this);
       });
     };
   })
-  .service('mapService', function($http, $q) {
+  .service('mapService', function() {
     this.stations = {};
     this.markers = {};
-
-    this.getBixiStations = function(force) {
-      var self = this;
-
-      if (!self.stations || force) {
-        return $http.get('http://localhost:3000/getBixiStations/').then(function(response) {
-          self.stations = response.data;
-          return self.stations;
-        });
-      } else {
-        var deferred = $q.defer();
-
-        deferred.resolve(self.stations);
-
-        return deferred.promise;
-      }
-    };
   });
