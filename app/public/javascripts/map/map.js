@@ -45,7 +45,7 @@ angular
         return;
       }
 
-      vm.playPromise = $interval(mapService.increaseHour, 2000);
+      vm.playPromise = $interval(mapService.increaseHour, 1000);
     };
 
     vm.pause = function() {
@@ -61,10 +61,11 @@ angular
     this.increaseHour = function() {
       _.each(stationsService.stations, function(s) {
         var circle = this.circles[s.id];
+        var netFlow = this.getStationFlowForHour(s, this.currentHour);
 
         circle.setOptions({
-          fillColor: this.getCircleColor(s, this.currentHour),
-          radius: this.getCircleRadius(s, this.currentHour)
+          fillColor: this.getCircleColor(netFlow),
+          radius: this.getCircleRadius(netFlow)
         })
 
       }, self);
@@ -83,18 +84,20 @@ angular
           lng: s.long
         };
 
+        var netFlow = this.getStationFlowForHour(s, this.currentHour);
+
         var circle = new google.maps.Circle({
           strokeColor: '#FFFFFF',
           strokeOpacity: 0.8,
           strokeWeight: 1,
-          fillColor: self.getCircleColor(s, self.currentHour),
+          fillColor: self.getCircleColor(netFlow),
           fillOpacity: 0.75,
           map: map,
           center: center,
           data: {
             station: s
           },
-          radius: self.getCircleRadius(s, self.currentHour)
+          radius: self.getCircleRadius(netFlow)
         });
 
         circle.addListener('mouseover', function() {
@@ -130,24 +133,28 @@ angular
     };
 
     this.getStationFlowForHour = function(station, hour) {
-      return _.first(_.where(stationsService.flow[station.id], { hour: hour }));
-    };
-
-    this.getCircleRadius = function(station, hour) {
-      var radiusMultiplier = 300;
-      var object = this.getStationFlowForHour(station, hour);
-      var radius;
+      var object = _.first(_.where(stationsService.flow[station.id], { hour: hour }));
 
       if (!object) {
-        return;
+        return null;
+      } else {
+        return object.netFlow;
       }
+    };
 
-      var netFlow = object.netFlow;
+    this.getCircleRadius = function(netFlow) {
+      var radiusMultiplier = 300;
+      var defaultRadius = 100;
+      var radius;
+
+      if (!netFlow) {
+        return defaultRadius;
+      }
 
       radius = Math.abs(Math.floor(netFlow / 5 * radiusMultiplier));
 
-      if (radius < 100) {
-        radius = 100;
+      if (radius < defaultRadius) {
+        radius = defaultRadius;
       }
 
       if (radius > radiusMultiplier) {
@@ -157,17 +164,12 @@ angular
       return radius;
     };
 
-    this.getCircleColor = function(station, hour) {
-      var object = this.getStationFlowForHour(station, hour);
-
-      if (!object) {
-        console.log('At ' + hour + ', there is no info for station id: ' + station.id);
-        return;
+    this.getCircleColor = function(netFlow) {
+      if (!netFlow) {
+        return '#532B72';
       }
 
-      var netFlow = object.netFlow;
-
-      console.log('At ' + hour + ', station id: ' + station.id + ' has a flow of: ' + netFlow);
+      // console.log('At ' + hour + ', station id: ' + station.id + ' has a flow of: ' + netFlow);
 
       if (netFlow <= -0.25) {
         return '#2D4671'; /* blue */
