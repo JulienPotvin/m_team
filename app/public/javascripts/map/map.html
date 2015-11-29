@@ -1,16 +1,24 @@
 <div class="map">
   <style>
     .map {
-      width: 100%;
     }
 
     #map {
-      width: 100%;
-      height: 600px;
+      height: 550px;
     }
   </style>
-  <div class="btn-toolbar">
-    <button class="btn btn-primary" type="button" ng-show="vm.shouldDisplaySnowAlert()">Create new snow plow alert</button>
+  <div class="row">
+    <div class="col-md-4">
+      <h2>Bikes at {{ vm.mapService.currentHour }}:00</h2>
+    </div>
+    <div class="col-md-4">
+      <div class="btn-toolbar" style="margin-top: 30px;">
+        <button type="button" class="btn btn-primary" ng-click="vm.play()"><i class="fa fa-play"></i></button>
+        <button type="button" class="btn btn-warning" ng-click="vm.pause()"><i class="fa fa-pause"></i></button>
+      </div>
+    </div>
   </div>
-  <div id="map"></div>
+  <div class="row">
+    <div id="map" class="col-md-12"></div>
+  </div>
 </div>

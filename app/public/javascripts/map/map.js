@@ -16,7 +16,7 @@ angular
       }
     };
   })
-  .controller('MapCtrl', function(_, google, stationsService, mapService) {
+  .controller('MapCtrl', function($q, $interval, _, google, stationsService, mapService) {
     var vm = this;
 
     vm.init = function() {
@@ -30,12 +30,27 @@ angular
 
       vm.stationsService = stationsService;
 
-      stationsService.getBixiStations().then(function(stations) {
-        mapService.drawStationsCircles(stations, vm.map);
+      var a = stationsService.getBixiStations();
+      var b = stationsService.getBixiFlow();
+
+      $q.all([a, b]).then(function(values) {
+        mapService.drawStationsCircles(values[0], vm.map);
       });
 
-      stationsService.getBixiFlow().then(function(flow) {
-      });
+      vm.mapService = mapService;
+    };
+
+    vm.play = function() {
+      if (vm.playPromise) {
+        return;
+      }
+
+      vm.playPromise = $interval(mapService.increaseHour, 2000);
+    };
+
+    vm.pause = function() {
+      $interval.cancel(vm.playPromise);
+      vm.playPromise = null;
     };
   })
   .service('mapService', function($, $interval, $rootScope, $compile, stationsService) {
@@ -72,13 +87,14 @@ angular
           strokeColor: '#FFFFFF',
           strokeOpacity: 0.8,
           strokeWeight: 1,
-          fillColor: '#FF0000',
+          fillColor: self.getCircleColor(s, self.currentHour),
           fillOpacity: 0.75,
           map: map,
           center: center,
           data: {
             station: s
-          }
+          },
+          radius: self.getCircleRadius(s, self.currentHour)
         });
 
         circle.addListener('mouseover', function() {
@@ -161,6 +177,4 @@ angular
         return '#AA3C39'; /* red */
       }
     };
-
-    $interval(this.increaseHour, 1000, this);
   });
