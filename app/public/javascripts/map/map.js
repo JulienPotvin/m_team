@@ -52,6 +52,14 @@ angular
       $interval.cancel(vm.playPromise);
       vm.playPromise = null;
     };
+
+    vm.next = function() {
+      mapService.increaseHour();
+    };
+
+    vm.previous = function() {
+      mapService.decreaseHour();
+    }
   })
   .service('mapService', function($, $interval, $rootScope, $compile, stationsService) {
     this.currentHour = 0;
@@ -59,7 +67,27 @@ angular
     var self = this;
 
     this.increaseHour = function() {
-      _.each(stationsService.stations, function(s) {
+      self.currentHour++;
+
+      if (self.currentHour >= 24) {
+        self.currentHour = 0;
+      }
+
+      self.updateCircles(stationsService.stations);
+    };
+
+    this.decreaseHour = function() {
+      self.currentHour--;
+
+      if (self.currentHour < 0) {
+        self.currentHour = 23;
+      }
+
+      self.updateCircles(stationsService.stations);
+    };
+
+    this.updateCircles = function(stations) {
+      _.each(stations, function(s) {
         var circle = this.circles[s.id];
         var netFlow = this.getStationFlowForHour(s, this.currentHour);
 
@@ -67,14 +95,7 @@ angular
           fillColor: this.getCircleColor(netFlow),
           radius: this.getCircleRadius(netFlow)
         })
-
       }, self);
-
-      self.currentHour++;
-
-      if (self.currentHour >= 24) {
-        self.currentHour = 0;
-      }
     };
 
     this.drawStationsCircles = function(stations, map) {
