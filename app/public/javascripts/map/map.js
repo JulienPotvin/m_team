@@ -7,7 +7,7 @@ angular
       replace: true,
       controller: 'MapCtrl',
       scope: {
-        isStoreMode: '='
+        dynamicMode: '='
       },
       controllerAs: 'vm',
       bindToController: true,
@@ -18,6 +18,8 @@ angular
   })
   .controller('MapCtrl', function($q, $interval, _, google, stationsService, mapService) {
     var vm = this;
+
+    console.log(vm.dynamicMode);
 
     vm.init = function() {
       var montreal = new google.maps.LatLng(45.4875794, -73.6222646);

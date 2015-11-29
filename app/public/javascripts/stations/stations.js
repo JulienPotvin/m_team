@@ -51,7 +51,6 @@ angular
           var flow = response.data;
 
           self.flow = _.groupBy(flow, 'stationId');
-          console.log(self.flow);
 
           return self.flow;
         });
@@ -59,6 +58,26 @@ angular
         var deferred = $q.defer();
 
         deferred.resolve(self.flow);
+
+        return deferred.promise;
+      }
+    };
+
+    this.getDynamicFlow = function(force) {
+      var self = this;
+
+      if (!self.flow || force) {
+        return $http.get('http://localhost:3000/rest/dynamic/').then(function(response) {
+          var dynamic = response.data;
+
+          self.dynamic = _.groupBy(dynamic, 'stationId');
+
+          return self.dynamic;
+        });
+      } else {
+        var deferred = $q.defer();
+
+        deferred.resolve(self.dynamic);
 
         return deferred.promise;
       }
