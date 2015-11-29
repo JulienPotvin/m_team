@@ -48,7 +48,8 @@ angular
         var circle = this.circles[s.id];
 
         circle.setOptions({
-          fillColor: this.getCircleColor(s, this.currentHour)
+          fillColor: this.getCircleColor(s, this.currentHour),
+          radius: this.getCircleRadius(s, this.currentHour)
         })
 
       }, self);
@@ -77,8 +78,7 @@ angular
           center: center,
           data: {
             station: s
-          },
-          radius: this.getCircleRadius(s)
+          }
         });
 
         circle.addListener('mouseover', function() {
@@ -113,20 +113,36 @@ angular
       }, this);
     };
 
-    this.getCircleRadius = function(station) {
-      var max = stationsService.bounds.max.nbEmptyDocks;
+    this.getStationFlowForHour = function(station, hour) {
+      return _.first(_.where(stationsService.flow[station.id], { hour: hour }));
+    };
 
-      var radius = Math.floor(station.nbEmptyDocks / max * 200);
+    this.getCircleRadius = function(station, hour) {
+      var radiusMultiplier = 300;
+      var object = this.getStationFlowForHour(station, hour);
+      var radius;
 
-      if (radius < 10) {
-        radius = 10;
+      if (!object) {
+        return;
+      }
+
+      var netFlow = object.netFlow;
+
+      radius = Math.abs(Math.floor(netFlow / 5 * radiusMultiplier));
+
+      if (radius < 100) {
+        radius = 100;
+      }
+
+      if (radius > radiusMultiplier) {
+        radis = radiusMultiplier;
       }
 
       return radius;
     };
 
     this.getCircleColor = function(station, hour) {
-      var object = _.first(_.where(stationsService.flow[station.id], { hour: hour }));
+      var object = this.getStationFlowForHour(station, hour);
 
       if (!object) {
         console.log('At ' + hour + ', there is no info for station id: ' + station.id);
