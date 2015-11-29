@@ -43,11 +43,17 @@ angular
       }
     };
 
-    this.getBixiFlow = function(force) {
+    this.getBixiFlow = function(force, dynamicMode) {
       var self = this;
 
+      var url = 'http://localhost:3000/rest/flow/';
+
+      if (dynamicMode) {
+        url = 'http://localhost:3000/rest/dynamic/';
+      }
+
       if (!self.flow || force) {
-        return $http.get('http://localhost:3000/rest/flow/').then(function(response) {
+        return $http.get(url).then(function(response) {
           var flow = response.data;
 
           self.flow = _.groupBy(flow, 'stationId');

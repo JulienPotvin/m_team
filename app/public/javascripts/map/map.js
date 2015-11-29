@@ -19,10 +19,10 @@ angular
   .controller('MapCtrl', function($q, $interval, _, google, stationsService, mapService) {
     var vm = this;
 
-    console.log(vm.dynamicMode);
-
     vm.init = function() {
       var montreal = new google.maps.LatLng(45.4875794, -73.6222646);
+
+      mapService.dynamicMode = vm.dynamicMode;
 
       vm.map = new google.maps.Map(document.getElementById('map'), {
         center: montreal,
@@ -33,7 +33,7 @@ angular
       vm.stationsService = stationsService;
 
       var a = stationsService.getBixiStations();
-      var b = stationsService.getBixiFlow();
+      var b = stationsService.getBixiFlow(false, vm.dynamicMode);
 
       $q.all([a, b]).then(function(values) {
         mapService.drawStationsCircles(values[0], vm.map);
@@ -166,15 +166,17 @@ angular
     };
 
     this.getCircleRadius = function(netFlow) {
+      var dynamicMode = this.dynamicMode;
       var radiusMultiplier = 300;
       var defaultRadius = 100;
+      var boundary = dynamicMode ? 25000 : 5;
       var radius;
 
       if (!netFlow) {
         return defaultRadius;
       }
 
-      radius = Math.abs(Math.floor(netFlow / 5 * radiusMultiplier));
+      radius = Math.abs(Math.floor(netFlow / boundary * radiusMultiplier));
 
       if (radius < defaultRadius) {
         radius = defaultRadius;
@@ -188,15 +190,28 @@ angular
     };
 
     this.getCircleColor = function(netFlow) {
+      var thresholds = {
+        regular: {
+          low: -0.25,
+          high: 0.5
+        },
+        dynamic: {
+          low: -5000,
+          high: 5000
+        }
+      };
+
+      var threshold = this.dynamicMode ? thresholds.dynamic : thresholds.regular;
+
       if (!netFlow) {
         return '#532B72';
       }
 
       // console.log('At ' + hour + ', station id: ' + station.id + ' has a flow of: ' + netFlow);
 
-      if (netFlow <= -0.25) {
+      if (netFlow <= threshold.low) {
         return '#2D4671'; /* blue */
-      } else if (netFlow > -0.25 && netFlow < 0.5) {
+      } else if (netFlow > threshold.low && netFlow < threshold.high) {
         return '#532B72'; /* purple */
       } else {
         return '#AA3C39'; /* red */
