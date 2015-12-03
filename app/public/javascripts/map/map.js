@@ -24,6 +24,8 @@ angular
 
       mapService.dynamicMode = vm.dynamicMode;
 
+      vm.title = vm.dynamicMode ? "Dynamic Flow at " : "Regular Flow at ";
+
       vm.map = new google.maps.Map(document.getElementById('map'), {
         center: montreal,
         zoom: 12,
@@ -190,6 +192,7 @@ angular
     };
 
     this.getCircleColor = function(netFlow) {
+      var dynamicMode = this.dynamicMode;
       var thresholds = {
         regular: {
           low: -0.25,
@@ -210,9 +213,9 @@ angular
       // console.log('At ' + hour + ', station id: ' + station.id + ' has a flow of: ' + netFlow);
 
       if (netFlow <= threshold.low) {
-        return '#2D4671'; /* blue */
+        return dynamicMode ? '#2D882D' : '#2D4671'; /* blue */
       } else if (netFlow > threshold.low && netFlow < threshold.high) {
-        return '#532B72'; /* purple */
+        return dynamicMode ? '#333333' : '#532B72'; /* purple */
       } else {
         return '#AA3C39'; /* red */
       }
